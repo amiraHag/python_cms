@@ -4,7 +4,8 @@
     <body class="text-center">
         <div class="container">
             <form method="post" class="form-register" style="color:white">
-                <br/>
+                {{ form.hidden_tag() }}
+                <br>
                 <img class="mb-4" src="http://theplaceholderworld.com/dev-women-empower/wp-content/uploads/register-button-png-23365.png" alt="">
                 <h1 class="h3 mb-3 font-weight-normal">
                      Please Create your Account
@@ -22,7 +23,7 @@
                 {{ form.password2.label() }}
                 {{ form.password2(class="form-control", placeholder="Confirm Password") }}
 
-                <br/>
+                <br>
                 {{ form.submit(class="btn btn-lg btn-block btn-primary") }}
             </form>
         </div>
