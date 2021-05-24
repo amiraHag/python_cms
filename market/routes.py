@@ -1,7 +1,7 @@
 from market import app
 from flask import render_template, redirect, url_for, flash, request
 from market.models import Item, User
-from market.forms import RegisterForm, LoginForm, PurchaseItemForm
+from market.forms import RegisterForm, LoginForm, PurchaseItemForm, SellItemForm
 from market import db
 from flask_login import login_user, logout_user, login_required, current_user
 
@@ -16,11 +16,13 @@ def home_page():
 @login_required
 def shop_page():
     purchase_form = PurchaseItemForm()
+    sell_form = SellItemForm()
     # if purchase_form.validate_on_submit():
         # print(purchase_form.__dict__)
         # print(purchase_form['submit'])
         # print(request.form.get('purchased_item'))
     if request.method == "POST":
+        # Purchase Item
         purchased_item = request.form.get('purchased_item')
         p_item_obj = Item.query.filter_by(name=purchased_item).first()
         if p_item_obj:
@@ -29,10 +31,21 @@ def shop_page():
                 flash(f"Congratulations! You purchased {p_item_obj.name} for {p_item_obj.price}$", category='success')
             else:
                 flash(f"Unfortunately, you don't have enough money to purchase {p_item_obj.name}!", category='danger')
+        # Sell Item
+        sold_item = request.form.get('sold_item')
+        s_item_object = Item.query.filter_by(name=sold_item).first()
+        if s_item_object:
+            if current_user.can_sell(s_item_object):
+                s_item_object.sell(current_user)
+                flash(f"Congratulations! You sold {s_item_object.name} back to market!", category='success')
+            else:
+                flash(f"Something went wrong with selling {s_item_object.name}", category='danger')
         return redirect(url_for('shop_page'))
     if request.method == "GET":
         items = Item.query.filter_by(owner=None)
-        return render_template('shop.html', shop_items=items, page_title='Shop Page', purchase_form=purchase_form)
+        owned_items = Item.query.filter_by(owner=current_user.user_id)
+        return render_template('shop.html', shop_items=items, page_title='Shop Page', purchase_form=purchase_form,
+                               owned_items=owned_items, sell_form=sell_form)
 
 
 @app.route('/about')
